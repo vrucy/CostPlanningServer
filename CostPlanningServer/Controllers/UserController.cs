@@ -23,20 +23,19 @@ namespace CostPlanningServer.Controllers
         }
         public async Task<IActionResult> PostAppUser(User user)
         {
-            return Ok(_context.Users.Single(x => x.Id == 6));
-            //user.Id = 0;
-            //await _context.Users.AddAsync(user);
-            //try
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //catch (System.Exception e)
-            //{
+            user.Id = 0;
+            await _context.Users.AddAsync(user);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
 
-            //    throw;
-            //}
-            
-            //return Ok(user);
+                throw;
+            }
+
+            return Ok(user);
         }
         public IActionResult GetNumberOfUsers()
         {
@@ -48,7 +47,20 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetLastUserServerId()
         {
+            try
+            {
+                var c = _context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+            }
+            catch (System.Exception e)
+            {
+
+                throw;
+            }
             return Ok(_context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id);
+        }
+        public IActionResult GetUnsyncUsers(int lastUserId)
+        {
+            return Ok(_context.Users.Where(x => x.Id> lastUserId));
         }
     }
 }

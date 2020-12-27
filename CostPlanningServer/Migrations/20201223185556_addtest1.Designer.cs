@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201115132337_addTest")]
-    partial class addTest
+    [Migration("20201223185556_addtest1")]
+    partial class addtest1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -34,6 +34,23 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Hrana"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Razno"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Putovanja"
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
@@ -55,8 +72,8 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsWriteToDb")
-                        .HasColumnType("bit");
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -82,6 +99,9 @@ namespace CostPlanningServer.Migrations
 
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20200906143729_init")]
-    partial class init
+    [Migration("20201223185004_addKeyInCat3")]
+    partial class addKeyInCat3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,6 +21,38 @@ namespace CostPlanningServer.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Hrana"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Razno"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Putovanja"
+                        });
+                });
+
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -28,16 +60,27 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Cost")
                         .HasColumnType("float");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
@@ -57,6 +100,9 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
@@ -64,6 +110,12 @@ namespace CostPlanningServer.Migrations
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
                 {
+                    b.HasOne("CostPlanningServer.Model.Category", "Category")
+                        .WithMany("Orders")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CostPlanningServer.Model.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")

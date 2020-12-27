@@ -35,14 +35,12 @@ namespace CostPlanningServer.Controllers
                         Cost = item.Cost,
                         Date = item.Date,
                         Description = item.Description,
-                        UserId = item.UserId,
-                        IsWriteToDb = true
+                        UserId = item.UserId
                     };
                     await _context.Orders.AddAsync(o);
                 }
                 catch (Exception e)
                 {
-                    //_logger.Error(e.Message);
                     throw;
                 }
             }
@@ -73,8 +71,7 @@ namespace CostPlanningServer.Controllers
                         Cost = item.Cost,
                         Date = item.Date,
                         Description = item.Description,
-                        UserId = item.UserId,
-                        IsWriteToDb = true
+                        UserId = item.User.ServerId
                     };
                     await _context.Orders.AddAsync(o);
                     await _context.SaveChangesAsync();
@@ -97,7 +94,6 @@ namespace CostPlanningServer.Controllers
 
                 throw;
             }
-            //TODO: if save change return ok
         }
         public IActionResult GetAllOrders()
         {
@@ -111,7 +107,18 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetLastOrderServerId()
         {
-            return Ok(_context.Orders.OrderByDescending(x=>x.Id).FirstOrDefault().Id);
+            var orders = _context.Orders.OrderByDescending(x => x.Id);
+
+            if (!orders.Any())
+            {
+                return Ok(-1);
+            }
+
+            return Ok(orders.FirstOrDefault().Id);
+        }
+        public IActionResult GetOrdersCountFromServer()
+        {
+            return Ok(_context.Orders.Count());
         }
     }
 }

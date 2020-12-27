@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201001184129_add-propDescription")]
-    partial class addpropDescription
+    [Migration("20201223192249_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,7 @@ namespace CostPlanningServer.Migrations
 
             modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -31,14 +31,31 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("CategoryId");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            CategoryId = 1,
+                            Name = "Hrana"
+                        },
+                        new
+                        {
+                            CategoryId = 2,
+                            Name = "Razno"
+                        },
+                        new
+                        {
+                            CategoryId = 3,
+                            Name = "Putovanja"
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("OrderId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -55,13 +72,13 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsWriteToDb")
-                        .HasColumnType("bit");
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("OrderId");
 
                     b.HasIndex("CategoryId");
 
@@ -72,7 +89,7 @@ namespace CostPlanningServer.Migrations
 
             modelBuilder.Entity("CostPlanningServer.Model.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -83,7 +100,10 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId");
 
                     b.ToTable("Users");
                 });

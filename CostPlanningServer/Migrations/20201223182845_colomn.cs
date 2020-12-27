@@ -2,7 +2,7 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class addTestAndProdDB : Migration
+    public partial class colomn : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

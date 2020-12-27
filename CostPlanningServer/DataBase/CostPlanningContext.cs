@@ -31,19 +31,20 @@ namespace CostPlanningServer.DataBase
                     Name = "Putovanja"
                 }
             );
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    FirstName = "Vladimir",
-                    LastName = "Vrucinic"
-                }, new User
-                {
-                    Id = 2,
-                    FirstName = "Jovana",
-                    LastName = "Vrucinic"
-                }
-                );
+            
+            //modelBuilder.Entity<User>().HasData(
+            //    new User
+            //    {
+            //        Id = 1,
+            //        FirstName = "Vladimir",
+            //        LastName = "Vrucinic"
+            //    }, new User
+            //    {
+            //        Id = 2,
+            //        FirstName = "Jovana",
+            //        LastName = "Vrucinic"
+            //    }
+            //    );
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

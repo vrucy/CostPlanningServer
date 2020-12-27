@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201115131943_addTestAndProdDB")]
-    partial class addTestAndProdDB
+    [Migration("20201223184320_addKeyInCat")]
+    partial class addKeyInCat
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,9 +24,7 @@ namespace CostPlanningServer.Migrations
             modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -34,6 +32,23 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Hrana"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Razno"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Putovanja"
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
@@ -55,8 +70,8 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsWriteToDb")
-                        .HasColumnType("bit");
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -83,9 +98,28 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            FirstName = "Vladimir",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            FirstName = "Jovana",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>

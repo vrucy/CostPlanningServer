@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201116205815_seedDB")]
-    partial class seedDB
+    [Migration("20201223183816_delete")]
+    partial class delete
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -100,6 +100,9 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
@@ -109,13 +112,15 @@ namespace CostPlanningServer.Migrations
                         {
                             Id = 1,
                             FirstName = "Vladimir",
-                            LastName = "Vrucinic"
+                            LastName = "Vrucinic",
+                            ServerId = 0
                         },
                         new
                         {
                             Id = 2,
                             FirstName = "Jovana",
-                            LastName = "Vrucinic"
+                            LastName = "Vrucinic",
+                            ServerId = 0
                         });
                 });
 

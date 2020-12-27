@@ -4,14 +4,16 @@ using CostPlanningServer.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    partial class CostPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20201223183053_colomn1")]
+    partial class colomn1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,6 +72,9 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsWriteToDb")
+                        .HasColumnType("bit");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -101,6 +106,22 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            FirstName = "Vladimir",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            FirstName = "Jovana",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>

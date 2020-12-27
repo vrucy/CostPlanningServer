@@ -4,14 +4,16 @@ using CostPlanningServer.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    partial class CostPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20201223184657_addKeyInCat2")]
+    partial class addKeyInCat2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,9 +24,7 @@ namespace CostPlanningServer.Migrations
             modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -70,6 +70,9 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -101,6 +104,22 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            FirstName = "Vladimir",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            FirstName = "Jovana",
+                            LastName = "Vrucinic",
+                            ServerId = 0
+                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
