@@ -4,14 +4,16 @@ using CostPlanningServer.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    partial class CostPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20210210132453_SyncVisible1")]
+    partial class SyncVisible1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,44 +99,46 @@ namespace CostPlanningServer.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Category>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("ItemId")
+                        .IsUnique();
 
-                    b.ToTable("SyncUserCategory");
+                    b.ToTable("SyncVisibleCategores");
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Order>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("ItemId")
+                        .IsUnique();
 
-                    b.ToTable("SyncUserOrder");
+                    b.ToTable("SyncVisibleOrders");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.User", b =>
@@ -150,7 +154,17 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SyncVisible<Category>Id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SyncVisible<Order>Id")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SyncVisible<Category>Id");
+
+                    b.HasIndex("SyncVisible<Order>Id");
 
                     b.ToTable("Users");
                 });
@@ -170,22 +184,33 @@ namespace CostPlanningServer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Category>", b =>
                 {
                     b.HasOne("CostPlanningServer.Model.Category", "Item")
-                        .WithMany("SyncUser")
-                        .HasForeignKey("ItemId")
+                        .WithOne("SyncVisible")
+                        .HasForeignKey("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Category>", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Order>", b =>
                 {
                     b.HasOne("CostPlanningServer.Model.Order", "Item")
-                        .WithMany("SyncUser")
-                        .HasForeignKey("ItemId")
+                        .WithOne("SyncVisible")
+                        .HasForeignKey("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Order>", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.User", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Category>", null)
+                        .WithMany("SyncUsers")
+                        .HasForeignKey("SyncVisible<Category>Id");
+
+                    b.HasOne("CostPlanningServer.Model.SyncVisible<CostPlanningServer.Model.Order>", null)
+                        .WithMany("SyncUsers")
+                        .HasForeignKey("SyncVisible<Order>Id");
                 });
 #pragma warning restore 612, 618
         }

@@ -27,22 +27,17 @@ namespace CostPlanningServer.Controllers
         {
             foreach (var item in orders)
             {
-                try
+
+                Order o = new Order()
                 {
-                    Order o = new Order()
-                    {
-                        CategoryId = item.CategoryId,
-                        Cost = item.Cost,
-                        Date = item.Date,
-                        Description = item.Description,
-                        UserId = item.UserId
-                    };
-                    await _context.Orders.AddAsync(o);
-                }
-                catch (Exception e)
-                {
-                    throw;
-                }
+                    CategoryId = item.CategoryId,
+                    Cost = item.Cost,
+                    Date = item.Date,
+                    Description = item.Description,
+                    UserId = item.UserId
+                };
+                await _context.Orders.AddAsync(o);
+
             }
             //_context.Orders.AddRange(orders);
             try
@@ -71,7 +66,8 @@ namespace CostPlanningServer.Controllers
                         Cost = item.Cost,
                         Date = item.Date,
                         Description = item.Description,
-                        UserId = item.User.ServerId
+                        //promena
+                        UserId = item.User.Id
                     };
                     await _context.Orders.AddAsync(o);
                     await _context.SaveChangesAsync();
@@ -101,6 +97,10 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetAllOrdersByIds(List<int> ids)
         {
+            //if (ids.Count == 0)
+            //{
+            //    return Ok(_context.Orders);
+            //}
             var orders = _context.Orders.Where(o => !ids.Contains(o.Id));
 
             return Ok(orders);
@@ -119,6 +119,22 @@ namespace CostPlanningServer.Controllers
         public IActionResult GetOrdersCountFromServer()
         {
             return Ok(_context.Orders.Count());
+        }
+        public IActionResult IsServerAvailable()
+        {
+            return Ok();
+        }
+        public IActionResult SyncDisable()
+        {
+            var categores = _context.Orders.Where(c => c.IsVisible == true);
+
+            var res = new List<int>();
+            foreach (var item in categores)
+            {
+                res.Add(item.Id);
+            }
+
+            return Ok(res);
         }
     }
 }

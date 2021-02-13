@@ -2,7 +2,7 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class addtest1 : Migration
+    public partial class asd : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

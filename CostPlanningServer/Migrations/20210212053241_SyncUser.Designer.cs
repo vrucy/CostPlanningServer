@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201223185004_addKeyInCat3")]
-    partial class addKeyInCat3
+    [Migration("20210212053241_SyncUser")]
+    partial class SyncUser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,8 +28,14 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -39,17 +45,23 @@ namespace CostPlanningServer.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Hrana"
+                            IsVisible = false,
+                            Name = "Hrana",
+                            ServerId = 0
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Razno"
+                            IsVisible = false,
+                            Name = "Razno",
+                            ServerId = 0
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Putovanja"
+                            IsVisible = false,
+                            Name = "Putovanja",
+                            ServerId = 0
                         });
                 });
 
@@ -72,8 +84,8 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServerId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -85,6 +97,47 @@ namespace CostPlanningServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId")
+                        .IsUnique();
+
+                    b.ToTable("SyncUserCategory");
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("SyncUserOrder");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.User", b =>
@@ -100,9 +153,6 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServerId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
@@ -113,12 +163,30 @@ namespace CostPlanningServer.Migrations
                     b.HasOne("CostPlanningServer.Model.Category", "Category")
                         .WithMany("Orders")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("CostPlanningServer.Model.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", "Item")
+                        .WithOne("SyncUser")
+                        .HasForeignKey("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", "ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Order", "Item")
+                        .WithMany("SyncUser")
+                        .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

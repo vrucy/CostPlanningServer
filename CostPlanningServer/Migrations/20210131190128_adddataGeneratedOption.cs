@@ -2,7 +2,7 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class colomn : Migration
+    public partial class adddataGeneratedOption : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201223190330_1")]
-    partial class _1
+    [Migration("20210206094323_BaseModelVisibility")]
+    partial class BaseModelVisibility
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,10 +28,27 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsDisable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VisibilityId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
 
                     b.ToTable("Categories");
 
@@ -39,17 +56,29 @@ namespace CostPlanningServer.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Hrana"
+                            IsDisable = false,
+                            IsVisible = false,
+                            Name = "Hrana",
+                            ServerId = 0,
+                            VisibilityId = 0
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Razno"
+                            IsDisable = false,
+                            IsVisible = false,
+                            Name = "Razno",
+                            ServerId = 0,
+                            VisibilityId = 0
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Putovanja"
+                            IsDisable = false,
+                            IsVisible = false,
+                            Name = "Putovanja",
+                            ServerId = 0,
+                            VisibilityId = 0
                         });
                 });
 
@@ -72,6 +101,15 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDisable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ServerId")
                         .HasColumnType("int");
 
@@ -81,6 +119,8 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("UserId");
 
@@ -94,18 +134,45 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServerId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.UpdetedUser", b =>
+                {
+                    b.HasBaseType("CostPlanningServer.Model.User");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasDiscriminator().HasValue("UpdetedUser");
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
@@ -116,11 +183,26 @@ namespace CostPlanningServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CostPlanningServer.Model.Order", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId");
+
                     b.HasOne("CostPlanningServer.Model.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.UpdetedUser", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", null)
+                        .WithMany("UpdatedUser")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("CostPlanningServer.Model.Order", null)
+                        .WithMany("UpdatedUser")
+                        .HasForeignKey("OrderId");
                 });
 #pragma warning restore 612, 618
         }

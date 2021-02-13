@@ -4,14 +4,16 @@ using CostPlanningServer.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    partial class CostPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20210209112255_NtoNUserBase1")]
+    partial class NtoNUserBase1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,6 +65,26 @@ namespace CostPlanningServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CostPlanningServer.Model.CategoryUpdatedUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("CategoryUpdatedUsers");
+                });
+
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -97,14 +119,14 @@ namespace CostPlanningServer.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.OrderUpdatedUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ItemId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -112,29 +134,9 @@ namespace CostPlanningServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("OrderId");
 
-                    b.ToTable("SyncUserCategory");
-                });
-
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("SyncUserOrder");
+                    b.ToTable("OrderUpdatedUsers");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.User", b =>
@@ -155,6 +157,15 @@ namespace CostPlanningServer.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("CostPlanningServer.Model.CategoryUpdatedUser", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", null)
+                        .WithMany("CategoryUpdatedUser")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
                 {
                     b.HasOne("CostPlanningServer.Model.Category", "Category")
@@ -170,20 +181,11 @@ namespace CostPlanningServer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Category>", b =>
+            modelBuilder.Entity("CostPlanningServer.Model.OrderUpdatedUser", b =>
                 {
-                    b.HasOne("CostPlanningServer.Model.Category", "Item")
-                        .WithMany("SyncUser")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("CostPlanningServer.Model.SyncUser<CostPlanningServer.Model.Order>", b =>
-                {
-                    b.HasOne("CostPlanningServer.Model.Order", "Item")
-                        .WithMany("SyncUser")
-                        .HasForeignKey("ItemId")
+                    b.HasOne("CostPlanningServer.Model.Order", null)
+                        .WithMany("CategoryUpdatedUser")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

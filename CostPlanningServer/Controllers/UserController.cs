@@ -21,8 +21,10 @@ namespace CostPlanningServer.Controllers
         {
             return Ok(_context.Users.ToList());
         }
+        //TODO: Delete serverID and update database
         public async Task<IActionResult> PostAppUser(User user)
         {
+            //promena
             user.Id = 0;
             await _context.Users.AddAsync(user);
             try
@@ -47,20 +49,21 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetLastUserServerId()
         {
-            try
+            if (!_context.Users.Any())
             {
-                var c = _context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id;
-            }
-            catch (System.Exception e)
-            {
-
-                throw;
+                return Ok(0);
             }
             return Ok(_context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id);
         }
         public IActionResult GetUnsyncUsers(int lastUserId)
         {
             return Ok(_context.Users.Where(x => x.Id> lastUserId));
+        }
+        public IActionResult PostCategory(Category category)
+        {
+            _context.Categories.AddAsync(category);
+            _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

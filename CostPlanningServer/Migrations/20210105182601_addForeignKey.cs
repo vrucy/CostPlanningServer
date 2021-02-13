@@ -2,7 +2,7 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class _1 : Migration
+    public partial class addForeignKey : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

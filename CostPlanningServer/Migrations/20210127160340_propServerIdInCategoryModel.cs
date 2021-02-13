@@ -2,13 +2,13 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class addColumnServerIdUser : Migration
+    public partial class propServerIdInCategoryModel : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "ServerId",
-                table: "Users",
+                table: "Categories",
                 nullable: false,
                 defaultValue: 0);
         }
@@ -17,7 +17,7 @@ namespace CostPlanningServer.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "ServerId",
-                table: "Users");
+                table: "Categories");
         }
     }
 }

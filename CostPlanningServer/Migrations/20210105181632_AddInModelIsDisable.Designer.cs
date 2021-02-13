@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201223185556_addtest1")]
-    partial class addtest1
+    [Migration("20210105181632_AddInModelIsDisable")]
+    partial class AddInModelIsDisable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,6 +28,9 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsDisable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -39,16 +42,19 @@ namespace CostPlanningServer.Migrations
                         new
                         {
                             Id = 1,
+                            IsDisable = false,
                             Name = "Hrana"
                         },
                         new
                         {
                             Id = 2,
+                            IsDisable = false,
                             Name = "Razno"
                         },
                         new
                         {
                             Id = 3,
+                            IsDisable = false,
                             Name = "Putovanja"
                         });
                 });
@@ -72,8 +78,8 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServerId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsDisable")
+                        .HasColumnType("bit");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

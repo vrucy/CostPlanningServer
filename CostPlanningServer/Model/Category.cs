@@ -9,6 +9,9 @@ namespace CostPlanningServer.Model
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
+        public bool IsVisible { get; set; }
+        public int ServerId { get; set; }
+        public ICollection<SyncUser<Category>> SyncUser { get; set; }
         public ICollection<Order> Orders { get; set; }
     }
 }

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201223183816_delete")]
-    partial class delete
+    [Migration("20210206122846_deletePropInModel")]
+    partial class deletePropInModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,10 +28,21 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
 
                     b.ToTable("Categories");
 
@@ -39,17 +50,23 @@ namespace CostPlanningServer.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Hrana"
+                            IsVisible = false,
+                            Name = "Hrana",
+                            ServerId = 0
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Razno"
+                            IsVisible = false,
+                            Name = "Razno",
+                            ServerId = 0
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Putovanja"
+                            IsVisible = false,
+                            Name = "Putovanja",
+                            ServerId = 0
                         });
                 });
 
@@ -72,8 +89,14 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsWriteToDb")
+                    b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -82,9 +105,36 @@ namespace CostPlanningServer.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("ItemId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.UpdetedUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("UpdetedUser");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.User", b =>
@@ -100,28 +150,16 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServerId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            FirstName = "Vladimir",
-                            LastName = "Vrucinic",
-                            ServerId = 0
-                        },
-                        new
-                        {
-                            Id = 2,
-                            FirstName = "Jovana",
-                            LastName = "Vrucinic",
-                            ServerId = 0
-                        });
+            modelBuilder.Entity("CostPlanningServer.Model.Category", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId");
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>
@@ -132,11 +170,26 @@ namespace CostPlanningServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CostPlanningServer.Model.Order", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId");
+
                     b.HasOne("CostPlanningServer.Model.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CostPlanningServer.Model.UpdetedUser", b =>
+                {
+                    b.HasOne("CostPlanningServer.Model.Category", null)
+                        .WithMany("UpdatedUser")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("CostPlanningServer.Model.Order", null)
+                        .WithMany("UpdatedUser")
+                        .HasForeignKey("OrderId");
                 });
 #pragma warning restore 612, 618
         }

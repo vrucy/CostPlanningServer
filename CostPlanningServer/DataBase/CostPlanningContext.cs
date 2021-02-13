@@ -1,8 +1,6 @@
 ﻿using CostPlanningServer.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Serilog;
-using System.Configuration;
 
 namespace CostPlanningServer.DataBase
 {
@@ -14,6 +12,8 @@ namespace CostPlanningServer.DataBase
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<SyncUser<Order>> SyncUserOrder{ get; set; }
+        public DbSet<SyncUser<Category>> SyncUserCategory { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>().HasData(
@@ -31,20 +31,28 @@ namespace CostPlanningServer.DataBase
                     Name = "Putovanja"
                 }
             );
+           
+
+
+            //modelBuilder.Entity<UpdatedUserBaseVisibility>()
+            //    .HasOne(uu => uu.UpdatedUser)
+            //    .WithMany(uuv => uuv.UpdatedUserBaseVisibilities)
+            //    .HasForeignKey(uu => uu.UpdatedUserId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Category)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(k => k.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict); 
             
-            //modelBuilder.Entity<User>().HasData(
-            //    new User
-            //    {
-            //        Id = 1,
-            //        FirstName = "Vladimir",
-            //        LastName = "Vrucinic"
-            //    }, new User
-            //    {
-            //        Id = 2,
-            //        FirstName = "Jovana",
-            //        LastName = "Vrucinic"
-            //    }
-            //    );
+            //modelBuilder.Entity<Category>()
+            //    .HasOne(o => o.SyncVisible)
+            //    .WithMany(c => c.SyncUsers)
+            //    .HasForeignKey(k => k.CategoryId)
+            //    .OnDelete(DeleteBehavior.Restrict);
+
+
+            
+            base.OnModelCreating(modelBuilder);
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

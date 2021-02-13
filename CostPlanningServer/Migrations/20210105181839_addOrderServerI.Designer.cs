@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CostPlanningServer.Migrations
 {
     [DbContext(typeof(CostPlanningContext))]
-    [Migration("20201223182845_colomn")]
-    partial class colomn
+    [Migration("20210105181839_addOrderServerI")]
+    partial class addOrderServerI
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,6 +28,9 @@ namespace CostPlanningServer.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("IsDisable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -39,16 +42,19 @@ namespace CostPlanningServer.Migrations
                         new
                         {
                             Id = 1,
+                            IsDisable = false,
                             Name = "Hrana"
                         },
                         new
                         {
                             Id = 2,
+                            IsDisable = false,
                             Name = "Razno"
                         },
                         new
                         {
                             Id = 3,
+                            IsDisable = false,
                             Name = "Putovanja"
                         });
                 });
@@ -72,8 +78,11 @@ namespace CostPlanningServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsWriteToDb")
+                    b.Property<bool>("IsDisable")
                         .HasColumnType("bit");
+
+                    b.Property<int>("ServerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -106,22 +115,6 @@ namespace CostPlanningServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            FirstName = "Vladimir",
-                            LastName = "Vrucinic",
-                            ServerId = 0
-                        },
-                        new
-                        {
-                            Id = 2,
-                            FirstName = "Jovana",
-                            LastName = "Vrucinic",
-                            ServerId = 0
-                        });
                 });
 
             modelBuilder.Entity("CostPlanningServer.Model.Order", b =>

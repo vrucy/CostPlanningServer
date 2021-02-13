@@ -2,14 +2,10 @@
 
 namespace CostPlanningServer.Migrations
 {
-    public partial class addServeridinOrder : Migration
+    public partial class addOrderServerI : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IsWriteToDb",
-                table: "Orders");
-
             migrationBuilder.AddColumn<int>(
                 name: "ServerId",
                 table: "Orders",
@@ -22,13 +18,6 @@ namespace CostPlanningServer.Migrations
             migrationBuilder.DropColumn(
                 name: "ServerId",
                 table: "Orders");
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsWriteToDb",
-                table: "Orders",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
         }
     }
 }
