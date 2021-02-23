@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using CostPlanningServer.DataBase;
 using CostPlanningServer.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Serilog;
 
 namespace CostPlanningServer.Controllers
 {
@@ -102,7 +101,6 @@ namespace CostPlanningServer.Controllers
             //    return Ok(_context.Orders);
             //}
             var orders = _context.Orders.Where(o => !ids.Contains(o.Id));
-
             return Ok(orders);
         }
         public IActionResult GetLastOrderServerId()
@@ -135,6 +133,34 @@ namespace CostPlanningServer.Controllers
             }
 
             return Ok(res);
+        }
+        [Route("{idUser}")]
+        public IActionResult SyncVisibility([FromRoute] int idUser)
+        {
+            //TODO: Refactor
+            Dictionary<int, bool> ordersForSync = new Dictionary<int, bool>();
+            var userForSync = new List<User>();
+            var allOrdersId = _context.Orders.Select(c => c.Id);
+            var userOrdersId = _context.SyncUserOrder.Where(c => c.UserId == idUser).Select(x => x.ItemId);
+
+            var res = allOrdersId.Except(userOrdersId);
+            foreach (var item in res)
+            {
+                var category = _context.Orders.FirstOrDefault(x => x.Id == item);
+                ordersForSync.Add(item, category.IsVisible);
+                var user = new SyncUser<Order>()
+                {
+                    UserId = idUser,
+                    ItemId = category.Id
+                };
+                _context.SyncUserOrder.Add(user);
+            }
+            if (res.Any())
+            {
+                _context.SaveChanges();
+            }
+
+            return Ok(JsonConvert.SerializeObject(ordersForSync));
         }
     }
 }

@@ -27,16 +27,8 @@ namespace CostPlanningServer.Controllers
             //promena
             user.Id = 0;
             await _context.Users.AddAsync(user);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (System.Exception e)
-            {
 
-                throw;
-            }
-
+            await _context.SaveChangesAsync();
             return Ok(user);
         }
         public IActionResult GetNumberOfUsers()
@@ -45,7 +37,7 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetAllUsersWithoutAppUser(int appUserId)
         {
-            return Ok(_context.Users.Where(x=>x.Id != appUserId).ToList());
+            return Ok(_context.Users.Where(x => x.Id != appUserId).ToList());
         }
         public IActionResult GetLastUserServerId()
         {
@@ -55,9 +47,10 @@ namespace CostPlanningServer.Controllers
             }
             return Ok(_context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id);
         }
-        public IActionResult GetUnsyncUsers(int lastUserId)
+        [Route("{lastUserId}")]
+        public IActionResult GetUnsyncUsers([FromRoute]int lastUserId)
         {
-            return Ok(_context.Users.Where(x => x.Id> lastUserId));
+            return Ok(_context.Users.Where(x => x.Id > lastUserId));
         }
         public IActionResult PostCategory(Category category)
         {

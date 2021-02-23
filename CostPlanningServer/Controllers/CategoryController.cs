@@ -1,7 +1,6 @@
 ﻿using CostPlanningServer.DataBase;
 using CostPlanningServer.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,10 +133,10 @@ namespace CostPlanningServer.Controllers
         {
             var categories = _context.Categories.Where(c => ids.Contains(c.Id));
 
-            //foreach (var item in categories)
-            //{
-            //    item.IsVisible = true;
-            //}
+            foreach (var item in categories)
+            {
+                item.IsVisible = true;
+            }
             _context.SaveChanges();
             return Ok();
         }
