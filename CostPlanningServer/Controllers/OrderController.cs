@@ -36,20 +36,17 @@ namespace CostPlanningServer.Controllers
                     UserId = item.UserId
                 };
                 await _context.Orders.AddAsync(o);
-
-            }
-            //_context.Orders.AddRange(orders);
-            try
-            {
                 await _context.SaveChangesAsync();
-                return Ok();
-
+                //TODO: This in helper repeat code
+                var user = new SyncUser<Order>()
+                {
+                    UserId = o.UserId,
+                    ItemId = o.Id
+                };
+                _context.SyncUserOrder.Add(user);
+                await _context.SaveChangesAsync();
             }
-            catch (Exception e)
-            {
-
-                throw;
-            }
+            return Ok();
             //TODO: if save change return ok
         }
         public async Task<IActionResult> UpdateOrders(List<Order> orders)
@@ -70,6 +67,13 @@ namespace CostPlanningServer.Controllers
                     };
                     await _context.Orders.AddAsync(o);
                     await _context.SaveChangesAsync();
+                    var user = new SyncUser<Order>()
+                    {
+                        UserId = o.UserId,
+                        ItemId = o.Id
+                    };
+                    _context.SyncUserOrder.Add(user);
+                    await _context.SaveChangesAsync();
                     Ids.Add(item.Id, o.Id);
                 }
                 catch (Exception e)
@@ -78,17 +82,7 @@ namespace CostPlanningServer.Controllers
                     throw;
                 }
             }
-            try
-            {
-
-                return Ok(JsonConvert.SerializeObject(Ids));
-
-            }
-            catch (Exception e)
-            {
-
-                throw;
-            }
+            return Ok(JsonConvert.SerializeObject(Ids));
         }
         public IActionResult GetAllOrders()
         {
@@ -96,10 +90,6 @@ namespace CostPlanningServer.Controllers
         }
         public IActionResult GetAllOrdersByIds(List<int> ids)
         {
-            //if (ids.Count == 0)
-            //{
-            //    return Ok(_context.Orders);
-            //}
             var orders = _context.Orders.Where(o => !ids.Contains(o.Id));
             return Ok(orders);
         }
