@@ -108,10 +108,7 @@ namespace CostPlanningServer.Controllers
         {
             return Ok(_context.Orders.Count());
         }
-        public IActionResult IsServerAvailable()
-        {
-            return Ok();
-        }
+        
         public IActionResult SyncDisable()
         {
             var categores = _context.Orders.Where(c => c.IsVisible == true);
@@ -151,6 +148,39 @@ namespace CostPlanningServer.Controllers
             }
 
             return Ok(JsonConvert.SerializeObject(ordersForSync));
+        }
+        [Route("{userId}")]
+        public IActionResult EditOrder(Order o, [FromRoute] int userId)
+        {
+            var order = _context.Orders.FirstOrDefault(x => x.Id == o.ServerId);
+            if (order != null)
+            {
+                try
+                {
+                    var categoresForDelete = _context.SyncUserOrder.Where(x => x.ItemId == order.Id);
+                    _context.SyncUserOrder.RemoveRange(categoresForDelete);
+                    //_context.SaveChanges();
+
+                    order.IsVisible = order.IsVisible;
+                    var syncOrder = new SyncUser<Order>()
+                    {
+                        ItemId = order.Id,
+                        UserId = userId
+                    };
+                    _context.SyncUserOrder.Add(syncOrder);
+                    _context.SaveChanges();
+                }
+                catch (System.Exception e)
+                {
+
+                    throw;
+                }
+
+
+                return Ok();
+            }
+
+            return BadRequest();
         }
     }
 }
