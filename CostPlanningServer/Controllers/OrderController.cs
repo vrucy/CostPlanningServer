@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using CostPlanningServer.DataBase;
 using CostPlanningServer.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using CostPlanningServer.Interface;
 
 namespace CostPlanningServer.Controllers
 {
@@ -16,40 +16,24 @@ namespace CostPlanningServer.Controllers
     {
         //TODO logger
         private readonly CostPlanningContext _context;
+        private readonly ISynchronization _synchronization;
         //private readonly ILogger _logger;
-        public OrderController(CostPlanningContext context/*, ILogger logger*/)
+        public OrderController(CostPlanningContext context, ISynchronization synchronization/*, ILogger logger*/)
         {
             _context = context;
+            _synchronization = synchronization;
             //_logger = logger;
         }
-        public async Task<IActionResult> PostOrders(List<Order> orders)
+        [Route("{deviceId}")]
+        public async Task PostOrder(Order order, string deviceId)
         {
-            foreach (var item in orders)
-            {
-
-                Order o = new Order()
-                {
-                    CategoryId = item.CategoryId,
-                    Cost = item.Cost,
-                    Date = item.Date,
-                    Description = item.Description,
-                    UserId = item.UserId
-                };
-                await _context.Orders.AddAsync(o);
-                await _context.SaveChangesAsync();
-                //TODO: This in helper repeat code
-                var user = new SyncUser<Order>()
-                {
-                    UserId = o.UserId,
-                    ItemId = o.Id
-                };
-                _context.SyncUserOrder.Add(user);
-                await _context.SaveChangesAsync();
-            }
-            return Ok();
-            //TODO: if save change return ok
+            await _synchronization.SyncDataOrder(order, deviceId);
+            
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
         }
-        public async Task<IActionResult> UpdateOrders(List<Order> orders)
+        [Route("{deviceId}")]
+        public async Task<IActionResult> UpdateOrders(List<Order> orders, [FromRoute] string deviceId)
         {
             var Ids = new Dictionary<int, int>();
             foreach (var item in orders)
@@ -58,22 +42,17 @@ namespace CostPlanningServer.Controllers
                 {
                     Order o = new Order()
                     {
-                        CategoryId = item.CategoryId,
+                        CategoryId = item.Category.Id,
                         Cost = item.Cost,
                         Date = item.Date,
+                        IsVisible = item.IsVisible,
                         Description = item.Description,
-                        //promena
                         UserId = item.User.Id
                     };
                     await _context.Orders.AddAsync(o);
                     await _context.SaveChangesAsync();
-                    var user = new SyncUser<Order>()
-                    {
-                        UserId = o.UserId,
-                        ItemId = o.Id
-                    };
-                    _context.SyncUserOrder.Add(user);
-                    await _context.SaveChangesAsync();
+                    await _synchronization.SyncDataOrder(o, deviceId);
+                    
                     Ids.Add(item.Id, o.Id);
                 }
                 catch (Exception e)
@@ -84,9 +63,13 @@ namespace CostPlanningServer.Controllers
             }
             return Ok(JsonConvert.SerializeObject(Ids));
         }
-        public IActionResult GetAllOrders()
+        [Route("{deviceId}")]
+        public async Task<IActionResult> GetAllOrders([FromRoute] string deviceId)
         {
-            return Ok(_context.Orders.ToList());
+            await _synchronization.SyncDataAllOrders(deviceId);
+            var orders = _context.Orders.ToList();
+
+            return Ok(orders);
         }
         public IActionResult GetAllOrdersByIds(List<int> ids)
         {
@@ -104,43 +87,21 @@ namespace CostPlanningServer.Controllers
 
             return Ok(orders.FirstOrDefault().Id);
         }
-        public IActionResult GetOrdersCountFromServer()
-        {
-            return Ok(_context.Orders.Count());
-        }
-        
-        public IActionResult SyncDisable()
-        {
-            var categores = _context.Orders.Where(c => c.IsVisible == true);
-
-            var res = new List<int>();
-            foreach (var item in categores)
-            {
-                res.Add(item.Id);
-            }
-
-            return Ok(res);
-        }
         [Route("{idUser}")]
-        public IActionResult SyncVisibility([FromRoute] int idUser)
+        public IActionResult SyncVisibility([FromRoute] string devaceId)
         {
             //TODO: Refactor
             Dictionary<int, bool> ordersForSync = new Dictionary<int, bool>();
             var userForSync = new List<User>();
             var allOrdersId = _context.Orders.Select(c => c.Id);
-            var userOrdersId = _context.SyncUserOrder.Where(c => c.UserId == idUser).Select(x => x.ItemId);
+            var userOrdersId = _context.SyncDataOrder.Where(c => c.DeviceId.Equals(devaceId)).Select(x => x.ItemId);
 
             var res = allOrdersId.Except(userOrdersId);
             foreach (var item in res)
             {
-                var category = _context.Orders.FirstOrDefault(x => x.Id == item);
-                ordersForSync.Add(item, category.IsVisible);
-                var user = new SyncUser<Order>()
-                {
-                    UserId = idUser,
-                    ItemId = category.Id
-                };
-                _context.SyncUserOrder.Add(user);
+                var order = _context.Orders.FirstOrDefault(x => x.Id == item);
+                ordersForSync.Add(item, order.IsVisible);
+                _synchronization.SyncDataOrder(order, devaceId);
             }
             if (res.Any())
             {
@@ -150,25 +111,22 @@ namespace CostPlanningServer.Controllers
             return Ok(JsonConvert.SerializeObject(ordersForSync));
         }
         [Route("{userId}")]
-        public IActionResult EditOrder(Order o, [FromRoute] int userId)
+        public async Task<IActionResult> EditOrder(Order o, [FromRoute] string deviceId)
         {
             var order = _context.Orders.FirstOrDefault(x => x.Id == o.ServerId);
             if (order != null)
             {
                 try
                 {
-                    var categoresForDelete = _context.SyncUserOrder.Where(x => x.ItemId == order.Id);
-                    _context.SyncUserOrder.RemoveRange(categoresForDelete);
-                    //_context.SaveChanges();
-
-                    order.IsVisible = order.IsVisible;
-                    var syncOrder = new SyncUser<Order>()
-                    {
-                        ItemId = order.Id,
-                        UserId = userId
-                    };
-                    _context.SyncUserOrder.Add(syncOrder);
-                    _context.SaveChanges();
+                    var ordersForDelete = _context.SyncDataOrder.Where(x => x.ItemId == order.Id);
+                    _context.SyncDataOrder.RemoveRange(ordersForDelete);
+                    order.IsVisible = o.IsVisible;
+                    order.Cost = o.Cost;
+                    order.Description = o.Description;
+                    order.Date = o.Date;
+                    await _synchronization.SyncDataOrder(order, deviceId);
+                    
+                    await _context.SaveChangesAsync();
                 }
                 catch (System.Exception e)
                 {

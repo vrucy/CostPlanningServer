@@ -12,8 +12,9 @@ namespace CostPlanningServer.DataBase
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<SyncUser<Order>> SyncUserOrder{ get; set; }
-        public DbSet<SyncUser<Category>> SyncUserCategory { get; set; }
+        public DbSet<Device> Devices{ get; set; }
+        public DbSet<SyncData<Order>> SyncDataOrder{ get; set; }
+        public DbSet<SyncData<Category>> SyncDataCategory { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>().HasData(
@@ -31,24 +32,14 @@ namespace CostPlanningServer.DataBase
                     Name = "Putovanja"
                 }
             );
-           
 
-
-            //modelBuilder.Entity<UpdatedUserBaseVisibility>()
-            //    .HasOne(uu => uu.UpdatedUser)
-            //    .WithMany(uuv => uuv.UpdatedUserBaseVisibilities)
-            //    .HasForeignKey(uu => uu.UpdatedUserId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Category)
                 .WithMany(c => c.Orders)
                 .HasForeignKey(k => k.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict); 
-            
-            //modelBuilder.Entity<Category>()
-            //    .HasOne(o => o.SyncVisible)
-            //    .WithMany(c => c.SyncUsers)
-            //    .HasForeignKey(k => k.CategoryId)
-            //    .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Order>().Ignore(s => s.SyncUser);
 
 
             

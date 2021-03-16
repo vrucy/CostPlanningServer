@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Core;
 using Microsoft.Extensions.Logging;
+using CostPlanningServer.Services;
+using CostPlanningServer.Interface;
 
 namespace CostPlanningServer
 {
@@ -34,6 +36,7 @@ namespace CostPlanningServer
             try
             {
                 services.AddDbContext<CostPlanningContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("CostPlanningDb")));
+                services.AddTransient<ISynchronization, SynchronizationService>();
 
             }
             catch (System.Exception e)

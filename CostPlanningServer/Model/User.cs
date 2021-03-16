@@ -10,5 +10,6 @@ namespace CostPlanningServer.Model
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public ICollection<Order> Orders { get; set; }
+        public ICollection<Device> Devices { get; set; }
     }
 }

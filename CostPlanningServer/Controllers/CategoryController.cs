@@ -1,4 +1,5 @@
 ﻿using CostPlanningServer.DataBase;
+using CostPlanningServer.Interface;
 using CostPlanningServer.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -13,43 +14,12 @@ namespace CostPlanningServer.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly CostPlanningContext _context;
-        public CategoryController(CostPlanningContext context)
+        private readonly ISynchronization _synchronization;
+
+        public CategoryController(CostPlanningContext context, ISynchronization synchronization)
         {
             _context = context;
-        }
-        [Route("{idUser}")]
-        public async Task<IActionResult> PostCategories(List<Category> categories,[FromRoute] int idUser)
-        {
-            var Ids = new Dictionary<int, int>();
-
-            foreach (var item in categories)
-            {
-                Category c = new Category()
-                {
-                    IsVisible = item.IsVisible,
-                    Name = item.Name,
-                    ServerId = item.ServerId
-                };
-                await _context.Categories.AddAsync(c);
-                //await _context.SaveChangesAsync();
-
-                var userVisible = new SyncUser<Category>()
-                {
-                    ItemId = c.Id,
-                    UserId = idUser
-                };
-                await _context.SyncUserCategory.AddAsync(userVisible);
-                //TODO: Check if savechabge works fine outside forech 
-                await _context.SaveChangesAsync();
-                Ids.Add(item.Id, c.Id);
-            }
-            return Ok(JsonConvert.SerializeObject(Ids));
-        }
-        public IActionResult GetAllCategoriesByIds(List<int> ids)
-        {
-            var orders = _context.Categories.Where(o => !ids.Contains(o.Id));
-
-            return Ok(orders);
+            _synchronization = synchronization;
         }
         public IActionResult GetLastCategoryServerId()
         {
@@ -66,34 +36,20 @@ namespace CostPlanningServer.Controllers
         {
             return Ok(_context.Categories);
         }
-        [Route("{userId}")]
-        public IActionResult EditCategory(Category cat,[FromRoute]int userId)
+        [Route("{deviceId}")]
+        public async Task<IActionResult> EditCategory(Category cat, [FromRoute] string deviceId)
         {
-            var category = _context.Categories.FirstOrDefault(x => x.Id == cat.ServerId);
+            var category = _context.Categories.FirstOrDefault(x => x.Id == cat.Id);
             if (category != null)
             {
-                try
-                {
-                    var categoresForDelete = _context.SyncUserCategory.Where(x => x.ItemId == category.Id);
-                    _context.SyncUserCategory.RemoveRange(categoresForDelete);
-                    //_context.SaveChanges();
+                var categoresForDelete = _context.SyncDataCategory.Where(x => x.ItemId == category.Id);
+                _context.SyncDataCategory.RemoveRange(categoresForDelete);
 
-                    category.IsVisible = cat.IsVisible;
-                    category.Name = cat.Name;
-                    var syncUser = new SyncUser<Category>()
-                    {
-                        ItemId = category.Id,
-                        UserId = userId
-                    };
-                    _context.SyncUserCategory.Add(syncUser);
-                    _context.SaveChanges();
-                }
-                catch (System.Exception e)
-                {
-
-                    throw;
-                }
-                
+                category.IsVisible = cat.IsVisible;
+                category.Name = cat.Name;
+                await _synchronization.SyncDataCategory(category,deviceId);
+                //TODO: Check if not need saveChanges. Is enough savechange in syncDataCategory!!.
+                await _context.SaveChangesAsync();
 
                 return Ok();
             }
@@ -101,44 +57,43 @@ namespace CostPlanningServer.Controllers
             return BadRequest();
         }
         //TODO: sync visibility
-        [Route("{idUser}")]
-        public IActionResult SyncDisable([FromRoute] int idUser) 
+        [Route("{deviceId}")]
+        public async Task<IActionResult> SyncVisbility([FromRoute] string deviceId)
         {
             //TODO: Refactor
             Dictionary<int, bool> categoresForSync = new Dictionary<int, bool>();
             var userForSync = new List<User>();
-            var allcategoresId = _context.Categories.Select(c=>c.Id);
-            var userCategoresId = _context.SyncUserCategory.Where(c=>c.UserId == idUser).Select(x=>x.ItemId);
+            var allcategoresId = _context.Categories.Select(c => c.Id);
+            var userCategoresId = _context.SyncDataCategory.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
 
             var res = allcategoresId.Except(userCategoresId);
             foreach (var item in res)
             {
                 var category = _context.Categories.FirstOrDefault(x => x.Id == item);
                 categoresForSync.Add(item, category.IsVisible);
-                var user = new SyncUser<Category>()
-                {
-                    UserId = idUser,
-                    ItemId = category.Id
-                };
-                _context.SyncUserCategory.Add(user);
+                await _synchronization.SyncDataCategory(category, deviceId);
             }
             if (res.Any())
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-                 
+
             return Ok(JsonConvert.SerializeObject(categoresForSync));
         }
-        public IActionResult SyncDisableOnServer(List<int> ids)
+        [Route("{deviceId}")]
+        public async Task<IActionResult> PostCategory(Category category, string deviceId)
         {
-            var categories = _context.Categories.Where(c => ids.Contains(c.Id));
-
-            foreach (var item in categories)
-            {
-                item.IsVisible = true;
-            }
-            _context.SaveChanges();
+            _context.Categories.Add(category);
+            //TODO: code repeat new file syncData
+            await _synchronization.SyncDataCategory(category, deviceId);
+            //TODO: Is need savechabge we have in syncdatadatgory??
+            await _context.SaveChangesAsync();
             return Ok();
+        }
+        [Route("{lastCategoryId}")]
+        public IActionResult GetUnsyncCategories([FromRoute] int lastCategoryId)
+        {
+            return Ok(_context.Categories.Where(x => x.Id > lastCategoryId));
         }
     }
 }

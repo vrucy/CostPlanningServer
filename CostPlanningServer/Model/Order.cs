@@ -17,6 +17,6 @@ namespace CostPlanningServer.Model
         public User User { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
-        public ICollection<SyncUser<Order>> SyncUser { get; set; }
+        public ICollection<SyncData<Order>> SyncUser { get; set; }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using CostPlanningServer.DataBase;
+using CostPlanningServer.Interface;
 using CostPlanningServer.Model;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,8 +14,9 @@ namespace CostPlanningServer.Controllers
     public class UserController : Controller
     {
         private readonly CostPlanningContext _context;
+
         //private readonly ILogger _logger;
-        public UserController(CostPlanningContext context/*, ILogger logger*/)
+        public UserController(CostPlanningContext context, ISynchronization synchronization/*, ILogger logger*/)
         {
             _context = context;
             //_logger = logger;
@@ -20,24 +24,6 @@ namespace CostPlanningServer.Controllers
         public IActionResult GetAllUsers()
         {
             return Ok(_context.Users.ToList());
-        }
-        //TODO: Delete serverID and update database
-        public async Task<IActionResult> PostAppUser(User user)
-        {
-            //promena
-            user.Id = 0;
-            await _context.Users.AddAsync(user);
-
-            await _context.SaveChangesAsync();
-            return Ok(user);
-        }
-        public IActionResult GetNumberOfUsers()
-        {
-            return Ok(_context.Users.Count());
-        }
-        public IActionResult GetAllUsersWithoutAppUser(int appUserId)
-        {
-            return Ok(_context.Users.Where(x => x.Id != appUserId).ToList());
         }
         public IActionResult GetLastUserServerId()
         {
@@ -48,15 +34,23 @@ namespace CostPlanningServer.Controllers
             return Ok(_context.Users.OrderByDescending(x => x.Id).FirstOrDefault().Id);
         }
         [Route("{lastUserId}")]
-        public IActionResult GetUnsyncUsers([FromRoute]int lastUserId)
+        public IActionResult GetUnsyncUsers([FromRoute] int lastUserId)
         {
             return Ok(_context.Users.Where(x => x.Id > lastUserId));
         }
-        public IActionResult PostCategory(Category category)
+        public IActionResult PostDevice(Device device)
         {
-            _context.Categories.AddAsync(category);
-            _context.SaveChangesAsync();
+            _context.Devices.Add(device);
+            _context.SaveChanges();
+
             return Ok();
+        }
+        public async Task<ActionResult<User>> PostUser(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(JsonConvert.SerializeObject(user));
         }
     }
 }
