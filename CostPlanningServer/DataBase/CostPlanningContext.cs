@@ -1,6 +1,7 @@
 ﻿using CostPlanningServer.Model;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Configuration;
 
 namespace CostPlanningServer.DataBase
 {
@@ -40,9 +41,8 @@ namespace CostPlanningServer.DataBase
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Order>().Ignore(s => s.SyncUser);
-
-
-            
+            modelBuilder.Entity<Category>().Ignore(s => s.SyncUser);
+                        
             base.OnModelCreating(modelBuilder);
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

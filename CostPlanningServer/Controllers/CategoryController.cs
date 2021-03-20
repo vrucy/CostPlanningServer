@@ -32,9 +32,13 @@ namespace CostPlanningServer.Controllers
 
             return Ok(categories.FirstOrDefault().Id);
         }
-        public IActionResult GetGategories()
+        [Route("{deviceId}")]
+        public async Task<IActionResult> GetGategories([FromRoute] string deviceId)
         {
-            return Ok(_context.Categories);
+            await _synchronization.SyncDataAllCategories(deviceId);
+
+            var categorires = _context.Categories.ToList();
+            return Ok(categorires);
         }
         [Route("{deviceId}")]
         public async Task<IActionResult> EditCategory(Category cat, [FromRoute] string deviceId)
@@ -47,9 +51,7 @@ namespace CostPlanningServer.Controllers
 
                 category.IsVisible = cat.IsVisible;
                 category.Name = cat.Name;
-                await _synchronization.SyncDataCategory(category,deviceId);
-                //TODO: Check if not need saveChanges. Is enough savechange in syncDataCategory!!.
-                await _context.SaveChangesAsync();
+                await _synchronization.SyncDataCategory(category, deviceId);
 
                 return Ok();
             }
@@ -67,15 +69,14 @@ namespace CostPlanningServer.Controllers
             var userCategoresId = _context.SyncDataCategory.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
 
             var res = allcategoresId.Except(userCategoresId);
-            foreach (var item in res)
-            {
-                var category = _context.Categories.FirstOrDefault(x => x.Id == item);
-                categoresForSync.Add(item, category.IsVisible);
-                await _synchronization.SyncDataCategory(category, deviceId);
-            }
             if (res.Any())
             {
-                await _context.SaveChangesAsync();
+                foreach (var item in res)
+                {
+                    var category = _context.Categories.FirstOrDefault(x => x.Id == item);
+                    categoresForSync.Add(item, category.IsVisible);
+                    await _synchronization.SyncDataCategory(category, deviceId);
+                }
             }
 
             return Ok(JsonConvert.SerializeObject(categoresForSync));
@@ -84,10 +85,9 @@ namespace CostPlanningServer.Controllers
         public async Task<IActionResult> PostCategory(Category category, string deviceId)
         {
             _context.Categories.Add(category);
-            //TODO: code repeat new file syncData
-            await _synchronization.SyncDataCategory(category, deviceId);
-            //TODO: Is need savechabge we have in syncdatadatgory??
             await _context.SaveChangesAsync();
+            await _synchronization.SyncDataCategory(category, deviceId);
+            
             return Ok();
         }
         [Route("{lastCategoryId}")]

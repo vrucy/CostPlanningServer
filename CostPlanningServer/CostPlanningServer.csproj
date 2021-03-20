@@ -81,6 +81,8 @@
     <Compile Remove="Migrations\20210210203457_SyncUsers.Designer.cs" />
     <Compile Remove="Migrations\20210210203615_SyncUsers.cs" />
     <Compile Remove="Migrations\20210210203615_SyncUsers.Designer.cs" />
+    <Compile Remove="Migrations\20210318162205_autoincrementIdCategoryandOrder.cs" />
+    <Compile Remove="Migrations\20210318162205_autoincrementIdCategoryandOrder.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

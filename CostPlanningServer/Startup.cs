@@ -36,7 +36,8 @@ namespace CostPlanningServer
             try
             {
                 services.AddDbContext<CostPlanningContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("CostPlanningDb")));
-                services.AddTransient<ISynchronization, SynchronizationService>();
+                //ovde promena zbog contexta jer puca u sinch
+                services.AddScoped<ISynchronization, SynchronizationService>();
 
             }
             catch (System.Exception e)

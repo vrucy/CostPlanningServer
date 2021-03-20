@@ -14,17 +14,17 @@ namespace CostPlanningServer.Services
         {
             _context = context;
         }
-        public async Task SyncDataAllCategories( string deviceId)
+        public async Task SyncDataAllCategories(string deviceId)
         {
             var categories = _context.Categories;
             foreach (var c in categories)
             {
-                var category = new SyncData<Order>()
+                var category = new SyncData<Category>()
                 {
                     DeviceId = deviceId,
                     ItemId = c.Id
                 };
-                await _context.SyncDataOrder.AddAsync(category);
+                await _context.SyncDataCategory.AddAsync(category);
             }
             await _context.SaveChangesAsync();
         }
@@ -44,14 +44,58 @@ namespace CostPlanningServer.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task SyncDataCategory(Category category, string deviceId)
+        public async Task SyncDataCategory(Category category, string deviceId)
         {
-            throw new System.NotImplementedException();
+            var cat = new SyncData<Category>()
+            {
+                ItemId = category.Id,
+                DeviceId = deviceId
+            };
+            await _context.SyncDataCategory.AddAsync(cat);
+            await _context.SaveChangesAsync();
         }
 
-        public Task SyncDataOrder(Order order, string deviceId)
+        public async Task SyncDataOrder(Order order, string deviceId)
         {
-            throw new System.NotImplementedException();
+            //do transaction here
+            var o = new SyncData<Order>()
+            {
+                ItemId = order.Id,
+                DeviceId = deviceId
+            };
+            try
+            {
+                await _context.SyncDataOrder.AddAsync(o);
+                await _context.SaveChangesAsync();
+
+            }
+            catch (System.Exception e)
+            {
+
+                throw;
+            }
+
+        }
+        public async Task SyncDataOrders(List<Order> orders, string deviceId)
+        {
+            try
+            {
+                foreach (var item in orders)
+                {
+                    var o = new SyncData<Order>()
+                    {
+                        ItemId = item.Id,
+                        DeviceId = deviceId
+                    };
+                await _context.SyncDataOrder.AddAsync(o);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
+
+                throw;
+            }
         }
     }
 }

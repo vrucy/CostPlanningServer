@@ -25,12 +25,13 @@ namespace CostPlanningServer.Controllers
             //_logger = logger;
         }
         [Route("{deviceId}")]
-        public async Task PostOrder(Order order, string deviceId)
+        public async Task PostOrder([FromBody] Order order, [FromRoute] string deviceId)
         {
-            await _synchronization.SyncDataOrder(order, deviceId);
-            
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            await _synchronization.SyncDataOrder(order, deviceId);
+
         }
         [Route("{deviceId}")]
         public async Task<IActionResult> UpdateOrders(List<Order> orders, [FromRoute] string deviceId)
@@ -51,8 +52,8 @@ namespace CostPlanningServer.Controllers
                     };
                     await _context.Orders.AddAsync(o);
                     await _context.SaveChangesAsync();
+
                     await _synchronization.SyncDataOrder(o, deviceId);
-                    
                     Ids.Add(item.Id, o.Id);
                 }
                 catch (Exception e)
@@ -87,53 +88,51 @@ namespace CostPlanningServer.Controllers
 
             return Ok(orders.FirstOrDefault().Id);
         }
-        [Route("{idUser}")]
-        public IActionResult SyncVisibility([FromRoute] string devaceId)
+        [Route("{deviceId}")]
+        public async Task<IActionResult> SyncVisibility([FromRoute] string deviceId)
         {
             //TODO: Refactor
             Dictionary<int, bool> ordersForSync = new Dictionary<int, bool>();
             var userForSync = new List<User>();
             var allOrdersId = _context.Orders.Select(c => c.Id);
-            var userOrdersId = _context.SyncDataOrder.Where(c => c.DeviceId.Equals(devaceId)).Select(x => x.ItemId);
+            var userOrdersId = _context.SyncDataOrder.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
 
             var res = allOrdersId.Except(userOrdersId);
-            foreach (var item in res)
-            {
-                var order = _context.Orders.FirstOrDefault(x => x.Id == item);
-                ordersForSync.Add(item, order.IsVisible);
-                _synchronization.SyncDataOrder(order, devaceId);
-            }
             if (res.Any())
             {
-                _context.SaveChanges();
+                var orders = new List<Order>();
+                foreach (var item in res)
+                {
+                    var order = _context.Orders.FirstOrDefault(x => x.Id == item);
+                    ordersForSync.Add(item, order.IsVisible);
+                    orders.Add(order);
+                }
+                await _synchronization.SyncDataOrders(orders, deviceId);
+
+                //foreach (var item in res)
+                //{
+                //    var order = _context.Orders.FirstOrDefault(x => x.Id == item);
+                //    ordersForSync.Add(item, order.IsVisible);
+                //    await _synchronization.SyncDataOrder(order, deviceId);
+                //}
             }
 
             return Ok(JsonConvert.SerializeObject(ordersForSync));
         }
-        [Route("{userId}")]
+        [Route("{deviceId}")]
         public async Task<IActionResult> EditOrder(Order o, [FromRoute] string deviceId)
         {
             var order = _context.Orders.FirstOrDefault(x => x.Id == o.ServerId);
             if (order != null)
             {
-                try
-                {
-                    var ordersForDelete = _context.SyncDataOrder.Where(x => x.ItemId == order.Id);
-                    _context.SyncDataOrder.RemoveRange(ordersForDelete);
-                    order.IsVisible = o.IsVisible;
-                    order.Cost = o.Cost;
-                    order.Description = o.Description;
-                    order.Date = o.Date;
-                    await _synchronization.SyncDataOrder(order, deviceId);
-                    
-                    await _context.SaveChangesAsync();
-                }
-                catch (System.Exception e)
-                {
+                var ordersForDelete = _context.SyncDataOrder.Where(x => x.ItemId == order.Id);
+                _context.SyncDataOrder.RemoveRange(ordersForDelete);
+                order.IsVisible = o.IsVisible;
+                order.Cost = o.Cost;
+                order.Description = o.Description;
+                order.Date = o.Date;
 
-                    throw;
-                }
-
+                await _synchronization.SyncDataOrder(order, deviceId);
 
                 return Ok();
             }
