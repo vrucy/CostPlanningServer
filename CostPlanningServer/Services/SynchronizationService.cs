@@ -44,6 +44,28 @@ namespace CostPlanningServer.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task SyncDataCategories(List<Category> categories, string deviceId)
+        {
+            try
+            {
+                foreach (var item in categories)
+                {
+                    var c = new SyncData<Category>()
+                    {
+                        ItemId = item.Id,
+                        DeviceId = deviceId
+                    };
+                    await _context.SyncDataCategory.AddAsync(c);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
+
+                throw;
+            }
+        }
+
         public async Task SyncDataCategory(Category category, string deviceId)
         {
             var cat = new SyncData<Category>()

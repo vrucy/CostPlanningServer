@@ -71,12 +71,14 @@ namespace CostPlanningServer.Controllers
             var res = allcategoresId.Except(userCategoresId);
             if (res.Any())
             {
+                var categories = new List<Category>();
                 foreach (var item in res)
                 {
                     var category = _context.Categories.FirstOrDefault(x => x.Id == item);
                     categoresForSync.Add(item, category.IsVisible);
-                    await _synchronization.SyncDataCategory(category, deviceId);
+                    categories.Add(category);
                 }
+                    await _synchronization.SyncDataCategories(categories, deviceId);
             }
 
             return Ok(JsonConvert.SerializeObject(categoresForSync));

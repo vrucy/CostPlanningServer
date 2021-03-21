@@ -107,14 +107,8 @@ namespace CostPlanningServer.Controllers
                     ordersForSync.Add(item, order.IsVisible);
                     orders.Add(order);
                 }
-                await _synchronization.SyncDataOrders(orders, deviceId);
 
-                //foreach (var item in res)
-                //{
-                //    var order = _context.Orders.FirstOrDefault(x => x.Id == item);
-                //    ordersForSync.Add(item, order.IsVisible);
-                //    await _synchronization.SyncDataOrder(order, deviceId);
-                //}
+                await _synchronization.SyncDataOrders(orders, deviceId);
             }
 
             return Ok(JsonConvert.SerializeObject(ordersForSync));
