@@ -84,13 +84,13 @@ namespace CostPlanningServer.Controllers
             return Ok(JsonConvert.SerializeObject(categoresForSync));
         }
         [Route("{deviceId}")]
-        public async Task<IActionResult> PostCategory(Category category, string deviceId)
+        public async Task<ActionResult<User>> PostCategory(Category category, string deviceId)
         {
-            _context.Categories.Add(category);
+            await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             await _synchronization.SyncDataCategory(category, deviceId);
             
-            return Ok();
+            return Ok(JsonConvert.SerializeObject(category));
         }
         [Route("{lastCategoryId}")]
         public IActionResult GetUnsyncCategories([FromRoute] int lastCategoryId)

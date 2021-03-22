@@ -25,13 +25,13 @@ namespace CostPlanningServer.Controllers
             //_logger = logger;
         }
         [Route("{deviceId}")]
-        public async Task PostOrder([FromBody] Order order, [FromRoute] string deviceId)
+        public async Task<IActionResult> PostOrder([FromBody] Order order, [FromRoute] string deviceId)
         {
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
             await _synchronization.SyncDataOrder(order, deviceId);
-
+            return Ok(order);
         }
         [Route("{deviceId}")]
         public async Task<IActionResult> UpdateOrders(List<Order> orders, [FromRoute] string deviceId)
