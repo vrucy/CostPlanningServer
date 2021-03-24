@@ -2,6 +2,7 @@
 using CostPlanningServer.Interface;
 using CostPlanningServer.Model;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CostPlanningServer.Services
@@ -79,7 +80,6 @@ namespace CostPlanningServer.Services
 
         public async Task SyncDataOrder(Order order, string deviceId)
         {
-            //do transaction here
             var o = new SyncData<Order>()
             {
                 ItemId = order.Id,
@@ -118,6 +118,51 @@ namespace CostPlanningServer.Services
 
                 throw;
             }
+        }
+
+        public async Task<Dictionary<int, bool>> SyncOrders(string deviceId)
+        {
+            Dictionary<int, bool> ordersForSync = new Dictionary<int, bool>();
+            var userForSync = new List<User>();
+            var allOrdersId = _context.Orders.Select(c => c.Id);
+            var userOrdersId = _context.SyncDataOrder.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
+
+            var res = allOrdersId.Except(userOrdersId);
+            if (res.Any())
+            {
+                var orders = new List<Order>();
+                foreach (var item in res)
+                {
+                    var order = _context.Orders.FirstOrDefault(x => x.Id == item);
+                    ordersForSync.Add(item, order.IsVisible);
+                    orders.Add(order);
+                }
+
+                await SyncDataOrders(orders, deviceId);
+            }
+            return ordersForSync;
+        }
+        public async Task<Dictionary<int, bool>> SyncCategories(string deviceId)
+        {
+            Dictionary<int, bool> categoriesForSync = new Dictionary<int, bool>();
+            var userForSync = new List<User>();
+            var allCategoriesId = _context.Categories.Select(c => c.Id);
+            var userCategoriesId = _context.SyncDataCategory.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
+
+            var res = allCategoriesId.Except(userCategoriesId);
+            if (res.Any())
+            {
+                var categories = new List<Category>();
+                foreach (var item in res)
+                {
+                    var order = _context.Categories.FirstOrDefault(x => x.Id == item);
+                    categoriesForSync.Add(item, order.IsVisible);
+                    categories.Add(order);
+                }
+
+                await SyncDataCategories(categories, deviceId);
+            }
+            return categoriesForSync;
         }
     }
 }

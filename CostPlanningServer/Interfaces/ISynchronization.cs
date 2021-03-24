@@ -12,5 +12,12 @@ namespace CostPlanningServer.Interface
         Task SyncDataCategories(List<Category> categories, string deviceId);
         Task SyncDataOrder(Order order, string deviceId);
         Task SyncDataOrders(List<Order> orders, string deviceId);
+        /// <summary>
+        /// Search and return orders what need sync.
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <returns>Dictionary what represent order id and isVisible </returns>
+        Task<Dictionary<int, bool>> SyncOrders(string deviceId);
+        Task<Dictionary<int, bool>> SyncCategories(string deviceId);
     }
 }

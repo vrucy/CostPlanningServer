@@ -39,28 +39,21 @@ namespace CostPlanningServer.Controllers
             var Ids = new Dictionary<int, int>();
             foreach (var item in orders)
             {
-                try
+                Order o = new Order()
                 {
-                    Order o = new Order()
-                    {
-                        CategoryId = item.Category.Id,
-                        Cost = item.Cost,
-                        Date = item.Date,
-                        IsVisible = item.IsVisible,
-                        Description = item.Description,
-                        UserId = item.User.Id
-                    };
-                    await _context.Orders.AddAsync(o);
-                    await _context.SaveChangesAsync();
+                    CategoryId = item.Category.Id,
+                    Cost = item.Cost,
+                    Date = item.Date,
+                    IsVisible = item.IsVisible,
+                    Description = item.Description,
+                    UserId = item.User.Id
+                };
+                await _context.Orders.AddAsync(o);
+                await _context.SaveChangesAsync();
 
-                    await _synchronization.SyncDataOrder(o, deviceId);
-                    Ids.Add(item.Id, o.Id);
-                }
-                catch (Exception e)
-                {
-                    //_logger.Error(e.Message);
-                    throw;
-                }
+                await _synchronization.SyncDataOrder(o, deviceId);
+                Ids.Add(item.Id, o.Id);
+
             }
             return Ok(JsonConvert.SerializeObject(Ids));
         }
@@ -92,26 +85,9 @@ namespace CostPlanningServer.Controllers
         public async Task<IActionResult> SyncVisibility([FromRoute] string deviceId)
         {
             //TODO: Refactor
-            Dictionary<int, bool> ordersForSync = new Dictionary<int, bool>();
-            var userForSync = new List<User>();
-            var allOrdersId = _context.Orders.Select(c => c.Id);
-            var userOrdersId = _context.SyncDataOrder.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
+            var orders = await _synchronization.SyncOrders(deviceId);
 
-            var res = allOrdersId.Except(userOrdersId);
-            if (res.Any())
-            {
-                var orders = new List<Order>();
-                foreach (var item in res)
-                {
-                    var order = _context.Orders.FirstOrDefault(x => x.Id == item);
-                    ordersForSync.Add(item, order.IsVisible);
-                    orders.Add(order);
-                }
-
-                await _synchronization.SyncDataOrders(orders, deviceId);
-            }
-
-            return Ok(JsonConvert.SerializeObject(ordersForSync));
+            return Ok(JsonConvert.SerializeObject(orders));
         }
         [Route("{deviceId}")]
         public async Task<IActionResult> EditOrder(Order o, [FromRoute] string deviceId)

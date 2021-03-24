@@ -58,30 +58,12 @@ namespace CostPlanningServer.Controllers
 
             return BadRequest();
         }
-        //TODO: sync visibility
         [Route("{deviceId}")]
         public async Task<IActionResult> SyncVisbility([FromRoute] string deviceId)
         {
-            //TODO: Refactor
-            Dictionary<int, bool> categoresForSync = new Dictionary<int, bool>();
-            var userForSync = new List<User>();
-            var allcategoresId = _context.Categories.Select(c => c.Id);
-            var userCategoresId = _context.SyncDataCategory.Where(c => c.DeviceId.Equals(deviceId)).Select(x => x.ItemId);
+            var categoriesForSync = await _synchronization.SyncCategories(deviceId);
 
-            var res = allcategoresId.Except(userCategoresId);
-            if (res.Any())
-            {
-                var categories = new List<Category>();
-                foreach (var item in res)
-                {
-                    var category = _context.Categories.FirstOrDefault(x => x.Id == item);
-                    categoresForSync.Add(item, category.IsVisible);
-                    categories.Add(category);
-                }
-                    await _synchronization.SyncDataCategories(categories, deviceId);
-            }
-
-            return Ok(JsonConvert.SerializeObject(categoresForSync));
+            return Ok(JsonConvert.SerializeObject(categoriesForSync));
         }
         [Route("{deviceId}")]
         public async Task<ActionResult<User>> PostCategory(Category category, string deviceId)
