@@ -17,7 +17,7 @@ namespace CostPlanningServer.Interface
         /// </summary>
         /// <param name="deviceId"></param>
         /// <returns>Dictionary what represent order id and isVisible </returns>
-        Task<Dictionary<int, bool>> SyncOrders(string deviceId);
-        Task<Dictionary<int, bool>> SyncCategories(string deviceId);
+        Task<List<Order>> SyncOrders(string deviceId);
+        Task<List<Category>> SyncCategories(string deviceId);
     }
 }

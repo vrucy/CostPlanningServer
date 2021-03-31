@@ -21,17 +21,7 @@ namespace CostPlanningServer.Controllers
             _context = context;
             _synchronization = synchronization;
         }
-        public IActionResult GetLastCategoryServerId()
-        {
-            var categories = _context.Categories.OrderByDescending(x => x.Id);
 
-            if (!categories.Any())
-            {
-                return Ok(-1);
-            }
-
-            return Ok(categories.FirstOrDefault().Id);
-        }
         [Route("{deviceId}")]
         public async Task<IActionResult> GetGategories([FromRoute] string deviceId)
         {
@@ -58,13 +48,7 @@ namespace CostPlanningServer.Controllers
 
             return BadRequest();
         }
-        [Route("{deviceId}")]
-        public async Task<IActionResult> SyncVisbility([FromRoute] string deviceId)
-        {
-            var categoriesForSync = await _synchronization.SyncCategories(deviceId);
 
-            return Ok(JsonConvert.SerializeObject(categoriesForSync));
-        }
         [Route("{deviceId}")]
         public async Task<ActionResult<User>> PostCategory(Category category, string deviceId)
         {
@@ -74,10 +58,23 @@ namespace CostPlanningServer.Controllers
             
             return Ok(JsonConvert.SerializeObject(category));
         }
-        [Route("{lastCategoryId}")]
-        public IActionResult GetUnsyncCategories([FromRoute] int lastCategoryId)
+        [Route("{deviceId}")]
+        public async Task<IActionResult> GetUnsyncCategories([FromRoute] string deviceId)
         {
-            return Ok(_context.Categories.Where(x => x.Id > lastCategoryId));
+            var groupCategories = _context.SyncDataCategory.ToLookup(x => x.DeviceId);
+            var usersCategories = _context.SyncDataCategory.Where(x => x.DeviceId == deviceId).ToList();
+            var categoriesIds = new List<int>();
+            var xx = groupCategories.Where(x => x.Key == deviceId);
+            foreach (var group in groupCategories.Where(x => x.Key != deviceId))
+            {
+                var res = group.ToList().Select(x => x.ItemId).Except(usersCategories.Select(x => x.ItemId));
+                categoriesIds.AddRange(res);
+            }
+
+            var categories = _context.Categories.Where(x => categoriesIds.Contains(x.Id));
+            await _synchronization.SyncDataCategories(categories.ToList(), deviceId);
+            return Ok(categories);
+
         }
     }
 }

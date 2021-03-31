@@ -52,7 +52,7 @@ namespace CostPlanningServer.Controllers
                 await _context.SaveChangesAsync();
 
                 await _synchronization.SyncDataOrder(o, deviceId);
-                Ids.Add(item.Id, o.Id);
+                  Ids.Add(item.Id, o.Id);
 
             }
             return Ok(JsonConvert.SerializeObject(Ids));
@@ -65,30 +65,7 @@ namespace CostPlanningServer.Controllers
 
             return Ok(orders);
         }
-        public IActionResult GetAllOrdersByIds(List<int> ids)
-        {
-            var orders = _context.Orders.Where(o => !ids.Contains(o.Id));
-            return Ok(orders);
-        }
-        public IActionResult GetLastOrderServerId()
-        {
-            var orders = _context.Orders.OrderByDescending(x => x.Id);
-
-            if (!orders.Any())
-            {
-                return Ok(-1);
-            }
-
-            return Ok(orders.FirstOrDefault().Id);
-        }
-        [Route("{deviceId}")]
-        public async Task<IActionResult> SyncVisibility([FromRoute] string deviceId)
-        {
-            //TODO: Refactor
-            var orders = await _synchronization.SyncOrders(deviceId);
-
-            return Ok(JsonConvert.SerializeObject(orders));
-        }
+        
         [Route("{deviceId}")]
         public async Task<IActionResult> EditOrder(Order o, [FromRoute] string deviceId)
         {
@@ -108,6 +85,23 @@ namespace CostPlanningServer.Controllers
             }
 
             return BadRequest();
+        }
+        [Route("{deviceId}")]
+        public async Task<IActionResult> GetUnsyncOrders([FromRoute] string deviceId)
+        {
+            var groupOrders = _context.SyncDataOrder.ToLookup(x => x.DeviceId);
+            var usersOrders = _context.SyncDataOrder.Where(x=>x.DeviceId == deviceId).ToList();
+            var ordersIds = new List<int>();
+            var xx = groupOrders.Where(x=>x.Key == deviceId);
+            foreach (var group in groupOrders.Where(x =>x.Key != deviceId))
+            {
+                var res = group.ToList().Select(x=>x.ItemId).Except(usersOrders.Select(x=>x.ItemId));
+                ordersIds.AddRange(res);                
+            }
+
+            var orders = _context.Orders.Where(x=> ordersIds.Contains(x.Id));
+            await _synchronization.SyncDataOrders(orders.ToList(), deviceId);
+            return Ok(orders);
         }
     }
 }
